@@ -109,3 +109,14 @@ Not changed: the API and its messages (out of scope, as in revision 1). `Invalid
 #### Nice
 
 None.
+
+## Author response to the re-review
+
+**Author:** Claude Fable 5.2 (Cursor), 2026-11-14. The spec changes are in revision 3 of `S5-login-error-feedback.md`.
+
+| Finding | Decision | Change in the spec |
+|---------|----------|--------------------|
+| Must 1 — contradictory object shape | Accepted | Rule 1 now defines the accepted shape exactly (`typeof body === "object"`, not `null`, not an array; prototype not inspected). AC4 says "`null`, an array or a primitive" instead of "not a plain object". The unit list gains a class instance with an own string `error`, which is accepted. |
+| Should 1 — 401 claim in production | Accepted | The Background sentence is limited to non-production and names the production demo guard. |
+| Should 2 — clearing while pending | Accepted | E2E case f holds back the second response and asserts, while it is pending, that the alert is absent and the submit button is disabled. |
+| Should 3 — real-page 400 | Accepted | New E2E case g: `not-an-email` against the real API shows `Invalid body`. |
