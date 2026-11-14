@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// Spec: .ai/specs/S5-login-error-feedback.md (AC7, cases a–g).
+// Spec: .ai/specs/S5-login-error-feedback.md (AC7, cases a–h).
 
 const LOGIN_API = "**/api/auth/login";
 const SECRET_MESSAGE =
@@ -108,12 +108,16 @@ test.describe("S5 login error feedback", () => {
       await route.continue();
     });
 
-    await submit(page, "mentee.a@demo.local", "demo-mentee-a");
-    const button = page.getByRole("button", { name: "Sign in" });
-    await expect(button).toBeDisabled();
-    await expect(loginAlert(page)).toHaveCount(0);
-
-    release();
+    try {
+      await submit(page, "mentee.a@demo.local", "demo-mentee-a");
+      const button = page.getByRole("button", { name: "Sign in" });
+      await expect(button).toBeDisabled();
+      await expect(loginAlert(page)).toHaveCount(0);
+    } finally {
+      // Always let the held request go, so a failed assertion cannot leave
+      // the route handler waiting during teardown.
+      release();
+    }
     await expect(page).toHaveURL(/\/tasks/);
     await expect(page.getByText(/Mentee A · mentee/)).toBeVisible();
   });
@@ -126,5 +130,26 @@ test.describe("S5 login error feedback", () => {
 
     await expect(loginAlert(page)).toHaveText("Invalid body");
     await expect(page).toHaveURL(/\/login$/);
+  });
+
+  test("h: markup in the message is shown as text, not rendered", async ({
+    page,
+  }) => {
+    const markup = '<b>Invalid</b><img src="x" onerror="window.__s5 = 1">';
+    await page.route(LOGIN_API, (route) =>
+      route.fulfill({
+        status: 401,
+        contentType: "application/json",
+        body: JSON.stringify({ error: markup }),
+      }),
+    );
+    await page.goto("/login");
+    await submit(page, "mentee.a@demo.local", "demo-mentee-a");
+
+    await expect(loginAlert(page)).toHaveText(markup);
+    await expect(loginAlert(page).locator("b, img")).toHaveCount(0);
+    expect(
+      await page.evaluate(() => (window as { __s5?: number }).__s5),
+    ).toBeUndefined();
   });
 });

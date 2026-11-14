@@ -19,6 +19,11 @@ describe("loginErrorMessage (S5)", () => {
     expect(loginErrorMessage({ error: message })).toBe(message);
   });
 
+  it("trims before applying the length limit", () => {
+    const message = "a".repeat(200);
+    expect(loginErrorMessage({ error: `  ${message}  ` })).toBe(message);
+  });
+
   it("falls back for a message of 201 characters", () => {
     expect(loginErrorMessage({ error: "a".repeat(201) })).toBe(
       LOGIN_ERROR_FALLBACK,
