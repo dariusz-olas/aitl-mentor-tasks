@@ -26,7 +26,7 @@ Szczegóły checklisty: [`docs/REVIEWER.md`](docs/REVIEWER.md).
 
 - Przewodnik dla oceniającego (wymaganie → dowód): [`docs/REVIEWER.md`](docs/REVIEWER.md)
 - `AGENTS.md` · `.ai/product-brief.md` · `docs/backlog.md` · `.cursor/skills/` · `docs/hook-demo.md` · `security-notes.md`
-- Specki i review innym modelem: `.ai/specs/` (S1–S4: GPT-5.2; S5: GPT-5.6 Sol)
+- Specki i review innym modelem: `.ai/specs/` (S1–S4: review GPT-5.2; S5: review specki GPT-5.6 Sol, review kodu Gemini 4 Hydrogen)
 - P4: `lib/task-status.ts` · Q4: `lib/permissions.ts` + `lib/tasks-api.idor.test.ts`
 
 ## CI

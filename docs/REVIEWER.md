@@ -36,15 +36,17 @@
 
 | Story | Spec napisał | Spec przejrzał | Kod napisał | Kod przejrzał |
 |-------|--------------|----------------|-------------|---------------|
-| S1–S4 | Composer (Cursor) | GPT-5.2, 2026-11-14 | sesje Cursora: Composer i GPT-5.6 Sol | — (patrz uwaga o PR #3) |
-| S5 | Claude Fable 5.2 (Cursor) | GPT-5.6 Sol, 2026-11-14, trzy przebiegi | Claude Fable 5.2 (Cursor) | Gemini 4 Hydrogen (komentarz w PR) + człowiek |
+| S1–S4 | sesje Cursora: Composer i GPT-5.6 Sol (przełączane) | GPT-5.2, 2026-11-14 | sesje Cursora: Composer i GPT-5.6 Sol | — (patrz uwaga o PR #3) |
+| S5 | Claude Fable 5.2 (Cursor) | GPT-5.6 Sol, 2026-11-14, trzy przebiegi | Claude Fable 5.2 (Cursor) | Gemini 4 Hydrogen (`.ai/specs/S5-login-error-feedback-code-review.md`) + człowiek w PR |
+
+Autorstwo S1–S4 według oświadczenia autora projektu: Cursor nie zapisuje modelu przy każdej wiadomości, a w sesjach przełączano oba modele. Nagłówki plików review S1–S4 podają autora tak, jak widział go recenzent („Composer”).
 
 Review S1–S4 odbył się po powstaniu kodu i poprawił specki tak, żeby zgadzały się z implementacją. W S5 kolejność jest właściwa: szkic specki → review → poprawki → akceptacja → dopiero kod. Widać to w historii commitów gałęzi `docs/s5-spec`.
 
 ### Ścieżka S5 (dowód A3–A4 i A8–A9)
 
-1. Specka i review: [PR z gałęzi `docs/s5-spec`](https://github.com/dariusz-olas/aitl-mentor-tasks/pulls?q=is%3Apr+head%3Adocs%2Fs5-spec) — commity po kolei: szkic → review „request changes” (4 Must) → rewizja 2 → re-review „request changes” (1 Must) → rewizja 3 → „approve”.
-2. Implementacja: [PR z gałęzi `feat/s5-login-error-feedback`](https://github.com/dariusz-olas/aitl-mentor-tasks/pulls?q=is%3Apr+head%3Afeat%2Fs5-login-error-feedback) — agent pracował według skilla `implement-from-spec`; w PR jest code review innego modelu, poprawki po nim i review człowieka przed merge.
+1. Specka i review: [PR #4](https://github.com/dariusz-olas/aitl-mentor-tasks/pull/4) — commity po kolei: szkic → review „request changes” (4 Must) → rewizja 2 → re-review „request changes” (1 Must) → rewizja 3 → „approve”.
+2. Implementacja: [PR #5](https://github.com/dariusz-olas/aitl-mentor-tasks/pull/5) — agent pracował według skilla `implement-from-spec`. Code review innego modelu i odpowiedź autora są w pliku `.ai/specs/S5-login-error-feedback-code-review.md`; review człowieka jest w samym PR, przed merge.
 
 ### Uwaga o PR #3
 
