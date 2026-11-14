@@ -24,8 +24,10 @@ Egzekucja: `lib/permissions.ts` + `assertTransition` w API. IDOR → **404**.
 
 ## Test uprawnień (Q4)
 
-- `lib/permissions.test.ts`
+- `lib/permissions.test.ts` (unit)
 - Scenariusz: mentee A ↛ task mentee B
+- API: `GET /api/tasks/t-seed-b` jako mentee A → **404** (nie 403)
+- CI: workflow `CI` na PR (build + unit + Playwright E2E), np. run po utworzeniu remote
 
 ## Prompt injection (wymagane)
 
