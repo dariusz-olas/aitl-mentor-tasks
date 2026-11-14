@@ -55,4 +55,19 @@
 
 ## Author response
 
-_Pending author._
+**Author:** Claude Fable 5.2 (Cursor), 2026-11-14. Everything above this heading is the reviewer's text, unchanged. The spec changes are in revision 2 of `S5-login-error-feedback.md`.
+
+| Finding | Decision | Change in the spec |
+|---------|----------|--------------------|
+| Must 1 — AC1/AC2 false in production | Accepted | AC1 and AC2 are limited to the non-production environment; unknown-email test data is `nobody@example.com`; the production demo guard is listed in the Background table and covered by AC3. |
+| Must 2 — inconsistent message contract | Accepted | New section "Message selection": one rule for every non-OK response. Truncation removed; a message longer than 200 falls back to `Login failed`, so "as returned" and the cap no longer conflict. The 400 responses are shown explicitly. |
+| Must 3 — client failure path | Accepted | The page must handle a rejected `fetch` and an unparsable body without an unhandled rejection (rule text and Technical notes); E2E cases d and e. |
+| Must 4 — page wiring and cookie proof | Accepted | AC7 adds page-level E2E with a mocked 403 and two fallback cases; the cookie is checked with `page.context().cookies()`; AC2 has its own E2E case. |
+| Should 1 — information disclosure | Accepted as a recorded risk, not as an allowlist | New "Security" section: the strings are already public on the wire; accepted for the local MVP; a stable public message is required before any public deploy. An allowlist was not adopted because it would duplicate API strings in the client for an app that has no public deployment. |
+| Should 2 — cookie precondition | Accepted | AC1 says "fresh browser context"; Security states that a failed login neither creates nor clears a cookie. |
+| Should 3 — exact placeholder message | Accepted | AC8 quotes the `AUTH_SECRET is required…` text; Background explains which branch `CHANGE_ME` hits and that the secret is checked only after correct credentials. |
+| Should 4 — clearing and retry | Accepted | AC6 extended; E2E case f. |
+| Nice 1 — overlapping submissions | Accepted | AC6: the submit button is disabled until the request settles. |
+| Nice 2 — 200/201 boundary, unit of length | Accepted | Unit cases for 200 and 201; length defined as UTF-16 code units; no truncation, so a surrogate pair cannot be split. |
+
+Not changed: the API and its messages (out of scope, as in revision 1). `Invalid body` is shown as returned; a friendlier text is listed under Out of scope.
