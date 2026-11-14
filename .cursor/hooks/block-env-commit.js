@@ -1,13 +1,26 @@
 /**
- * Deterministic guard: block shell commands that would stage/commit/push .env* files.
- * - Literal .env / multi-segment (.env.production.local) / quotes / globs
- * - Broad force-add of the tree when any .env* exists on disk
- * - Staged-index check for commit/push (and add when cache already dirty)
- * Demo: docs/hook-demo.md · scripts/verify-hook.js
+ * Cursor beforeShellExecution guard: keep .env* files out of git.
+ *
+ * It reads the hook payload from stdin and exits 2 (deny) when:
+ *   0. the payload has no command to inspect (fail closed),
+ *   1. a git add/stage carries a force flag in any form,
+ *   2. a git index-plumbing write is used (update-index --add / --cacheinfo),
+ *   3. a git add/commit/push/stage names a .env* path literally,
+ *   4. a git add/commit/push/stage runs while a .env* file is tracked, staged,
+ *      or untracked and not ignored (so a broad add would pick it up).
+ *
+ * This is a guardrail on the shell channel, not a security boundary.
+ * Known limits are listed in security-notes.md.
+ * Demo: docs/hook-demo.md · Regression test: scripts/verify-hook.js
  */
 const fs = require("fs");
 const path = require("path");
 const { execFileSync } = require("child_process");
+
+function deny(msg) {
+  console.error(`HOOK DENY: ${msg}`);
+  process.exit(2);
+}
 
 let input = "";
 try {
@@ -16,38 +29,58 @@ try {
   input = "";
 }
 
-let payload = {};
+let command;
+let payloadCwd;
+if (input.trim() === "") {
+  deny("empty hook payload: no command to inspect (failing closed)");
+}
 try {
-  payload = JSON.parse(input || "{}");
+  const payload = JSON.parse(input);
+  if (payload && typeof payload === "object") {
+    command = payload.command;
+    payloadCwd = payload.cwd;
+  }
 } catch {
-  payload = { command: String(input || "") };
+  // Not JSON: treat the raw text as the command, so it is still inspected.
+  command = input;
+}
+if (typeof command !== "string" || command.trim() === "") {
+  deny("hook payload has no command string (failing closed)");
 }
 
-const command = String(payload.command || payload.cmd || "");
+const cwd =
+  typeof payloadCwd === "string" && payloadCwd && fs.existsSync(payloadCwd)
+    ? payloadCwd
+    : process.cwd();
 
-const isGitMutating =
-  /\bgit(?:\.exe)?\b[\s\S]*\b(add|commit|push|stage)\b/i.test(command);
+/** Quotes, backticks and carets removed, so `"-f"` or -`f cannot hide a flag. */
+const bare = command.replace(/["'`^]/g, "");
 
-const isAdd = /\bgit(?:\.exe)?\b[\s\S]*\b(add|stage)\b/i.test(command);
-const isCommitOrPush = /\bgit(?:\.exe)?\b[\s\S]*\b(commit|push)\b/i.test(command);
-const hasForce = /(^|[\s])(-f|--force)([\s]|$)/i.test(command);
-const isBroadAdd =
-  isAdd &&
-  (/(^|[\s])(-A|--all)([\s]|$)/i.test(command) ||
-    /(^|[\s])\.(?:[\s]|$)/.test(command) ||
-    /git(?:\.exe)?\s+(?:-C\s+\S+\s+)?add\s*$/i.test(command.trim()));
+const mentionsGit = /\bgit(?:\.exe)?\b/i.test(bare);
+const isAdd = mentionsGit && /\b(add|stage)\b/i.test(bare);
+const isCommitOrPush = mentionsGit && /\b(commit|push)\b/i.test(bare);
+const isIndexPlumbing =
+  mentionsGit && /\bupdate-index\b[\s\S]*--(add|cacheinfo)\b/i.test(bare);
 
-/** Allowed committed templates (never secrets). */
+/**
+ * -f alone or inside a cluster of `git add` short options (-fA, -Af, -nfv),
+ * or --force and its accepted prefixes (--f, --fo, --for, --forc).
+ */
+const hasForceFlag =
+  /(^|\s)-[nvipeuAN]*f[nvfipeuAN]*(?=\s|$)/.test(bare) ||
+  /(^|\s)--f(o(r(c(e)?)?)?)?(?=\s|=|$)/.test(bare);
+
+/** Committed templates that never hold secrets. */
 const ENV_ALLOWLIST = new Set([".env.example", ".env.sample"]);
 
-/** .env, .env.local, .env.production.local, ".env*", path/.env … */
+/** .env, .env.local, .env.production.local, dir/.env, .env* */
 function pathLooksLikeEnv(p) {
   const base = path.basename(String(p).replace(/["']/g, ""));
   if (ENV_ALLOWLIST.has(base)) return false;
-  return /^\.env(\.[A-Za-z0-9_-]+)*$/.test(base) || base === ".env" || /^\.env\*/.test(base);
+  return /^\.env(\.[A-Za-z0-9_-]+)*$/.test(base) || /^\.env\*/.test(base);
 }
 
-/** Strip allowlisted template filenames before literal matching. */
+/** Allowlisted template names removed before the literal scan. */
 const commandForLiteralScan = command.replace(
   /(^|[\s"'=/\\])\.env\.(example|sample)\b/gi,
   "$1",
@@ -57,52 +90,50 @@ const touchesEnvLiteral =
   /(^|[\s"'=/\\])\.env(\.[A-Za-z0-9_-]+)*(\*|["']|$|\s)/i.test(commandForLiteralScan) ||
   /(^|[\s"'=/\\])\.env["']/i.test(commandForLiteralScan);
 
-function envFilesOnDisk(cwd) {
+/**
+ * .env* files git would carry: tracked or staged (--cached), or untracked and
+ * not ignored (--others --exclude-standard). An ignored .env is the normal,
+ * safe state and is not listed. Outside a git repo the list is empty.
+ */
+function envFilesGitWouldCarry(dir) {
   try {
-    return fs.readdirSync(cwd).filter((name) => pathLooksLikeEnv(name));
+    const out = execFileSync(
+      "git",
+      ["ls-files", "--cached", "--others", "--exclude-standard"],
+      { cwd: dir, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
+    );
+    return [
+      ...new Set(
+        out
+          .split(/\r?\n/)
+          .map((l) => l.trim())
+          .filter(Boolean)
+          .filter(pathLooksLikeEnv),
+      ),
+    ];
   } catch {
     return [];
   }
 }
 
-function stagedEnvPaths(cwd) {
-  try {
-    const out = execFileSync("git", ["diff", "--cached", "--name-only", "--diff-filter=ACMR"], {
-      cwd,
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-    });
-    return out
-      .split(/\r?\n/)
-      .map((l) => l.trim())
-      .filter(Boolean)
-      .filter(pathLooksLikeEnv);
-  } catch {
-    return [];
-  }
+if (isAdd && hasForceFlag) {
+  deny("refusing git add/stage with a force flag (it can add ignored .env* files)");
 }
 
-function deny(msg) {
-  console.error(`HOOK DENY: ${msg}`);
-  process.exit(2);
+if (isIndexPlumbing) {
+  deny("refusing git update-index --add/--cacheinfo (bypasses .gitignore)");
 }
 
-if (isGitMutating) {
-  const cwd = process.cwd();
-
+if (isAdd || isCommitOrPush) {
   if (touchesEnvLiteral) {
     deny("refusing git add/commit/push/stage involving .env* (literal path in command)");
   }
 
-  if (isAdd && hasForce && isBroadAdd && envFilesOnDisk(cwd).length > 0) {
-    deny("refusing force/broad git add while .env* files exist on disk");
-  }
-
-  if (isCommitOrPush || isAdd) {
-    const staged = stagedEnvPaths(cwd);
-    if (staged.length > 0) {
-      deny(`refusing git mutating command with staged .env*: ${staged.join(", ")}`);
-    }
+  const exposed = envFilesGitWouldCarry(cwd);
+  if (exposed.length > 0) {
+    deny(
+      `refusing git add/commit/push/stage while .env* is tracked, staged or not ignored: ${exposed.join(", ")}`,
+    );
   }
 }
 

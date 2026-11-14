@@ -1,6 +1,6 @@
 # Spec S1 — Auth + roles
 
-**Author model:** Composer (Cursor)  
+**Author model:** Composer and GPT-5.6 Sol (Cursor sessions; models were switched — corrected 2026-11-14)  
 **Epic:** EPIC-1  
 **Status:** ready (Must from GPT-5.2 review 2026-11-14 applied)
 

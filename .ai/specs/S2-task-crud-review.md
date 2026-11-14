@@ -43,7 +43,7 @@
 
 ## Author response
 
-**Author model:** Composer (Cursor) · **Date:** 2026-11-14
+**Author model:** Composer and GPT-5.6 Sol (Cursor sessions; models were switched — corrected 2026-11-14) · **Date:** 2026-11-14
 
 - Applied Musts in `S2-task-crud.md`: assignee-based owner; UI must not lag API; trim title; clearer test expectations.
 - Same PR implements UI: description on create, edit title/description, mentor assignee select + route IDOR tests (S4).

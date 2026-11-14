@@ -58,7 +58,7 @@ test("IDOR: mentee A gets 404 on mentee B task API", async ({ page, request }) =
 
   const cookies = await page.context().cookies();
   const cookieHeader = cookies.map((c) => `${c.name}=${c.value}`).join("; ");
-  const res = await request.get("http://127.0.0.1:3000/api/tasks/t-seed-b", {
+  const res = await request.get("/api/tasks/t-seed-b", {
     headers: { Cookie: cookieHeader },
   });
   expect(res.status()).toBe(404);

@@ -2,34 +2,46 @@
 
 ## Cel hooka
 
-Blokada `git add/commit/push/stage` gdy:
+Utrzymać pliki `.env*` poza gitem, gdy komendy wykonuje agent. Hook odmawia (exit 2), gdy:
 
-1. komenda zawiera ścieżkę `.env*` (także wielosegmentowe, np. `.env.production.local`),
-2. `git add -f` / broad add (`.`, `-A`, `--all`) przy istniejącym pliku `.env*` na dysku,
-3. indeks ma już zstagedowane pliki `.env*` (commit/push/add).
+1. `git add` / `git stage` ma flagę force w dowolnej formie (`-f`, `-fA`, `-Af`, `--force`, skróty `--f…`, także w cudzysłowie),
+2. użyto `git update-index --add` / `--cacheinfo`,
+3. `git add/commit/push/stage` wymienia literalnie ścieżkę `.env*` (poza `.env.example` i `.env.sample`),
+4. `git add/commit/push/stage` jest uruchamiany, gdy jakiś `.env*` jest śledzony, zstagowany albo nieignorowany,
+5. wywołanie nie zawiera komendy do sprawdzenia (pusty lub nieznany payload) — fail closed.
+
+Zignorowany `.env` na dysku to stan normalny: zwykłe `git add -A`, commit i push przechodzą.
 
 ## Gdzie jest zdefiniowany
 
 - `.cursor/hooks.json` → `beforeShellExecution`
 - Skrypt: `.cursor/hooks/block-env-commit.js`
-- Automatyczny dowód: `node scripts/verify-hook.js` (także w CI)
+- Test regresyjny: `scripts/verify-hook.js` (krok `verify env hook` w CI)
 
-## Scenariusz odtworzenia
+Hook działa tylko w sesji Cursora, której katalogiem roboczym jest to repo.
+
+## Odtworzenie
 
 ```powershell
 node scripts/verify-hook.js
 ```
 
-Oczekiwane: wszystkie linie `OK`, exit 0.
+Oczekiwane: 58 linii `OK`, na końcu `All hook cases passed`, exit 0. Skrypt podaje hookowi komendy przez stdin, tak jak Cursor; żadnej z testowanych komend nie wykonuje. Przypadki stanu repo (sekcja 6) budują jednorazowe repozytoria w katalogu tymczasowym.
 
-Ręcznie (przez pipe do skryptu, nie przez Cursor shell z literalnym `.env` w komendzie agenta):
+Pojedynczy przypadek ręcznie:
 
-- DENY: `git add .env.local`, `git add ".env"`, `git add .env.production.local`, `git add -f .` (gdy `.env` istnieje)
-- ALLOW: `git status`
+```powershell
+'{"command":"git add -f ."}' | node .cursor/hooks/block-env-commit.js
+# HOOK DENY: refusing git add/stage with a force flag (it can add ignored .env* files)
+```
 
-## Prompt injection — dwa poziomy dowodu
+## Czego hook nie zatrzyma
 
-1. **Skrypt deterministyczny** (`scripts/verify-hook.js`) — regresja logiki hooka.
-2. **Sesja agenta** — adversarial intent w tej sesji implementacyjnej (próba `git add -f .` / commit ścieżki env) zatrzymany przez aktywny hook Cursor lub przez logikę DENY powyżej. Zob. `security-notes.md` § Prompt injection.
+Lista w `security-notes.md` → „Granice hooka”. W skrócie: odczytu `.env`, wyniesienia treści inną drogą niż git, gita poza Cursorem. Hook nie zastępuje `.gitignore` ani secret scanning po stronie GitHuba.
 
-Hook chroni **kanał shell** w Cursor; nie zastępuje `.gitignore` ani secret scanning na remote.
+## Hook a prompt injection
+
+To dwie różne rzeczy i dwa różne dowody:
+
+- test hooka (`scripts/verify-hook.js`) pokazuje, co mechanizm zrobi z komendą, jeśli agent ją wyda,
+- próba prompt injection (`security-notes.md` → „Próba z 2026-11-14”, `scripts/injection-lab.js`) pokazuje, czy agent w ogóle ją wyda po przeczytaniu wrogiej treści.

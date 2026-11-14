@@ -44,7 +44,7 @@
 
 ## Author response
 
-**Author model:** Composer (Cursor) · **Date:** 2026-11-14
+**Author model:** Composer and GPT-5.6 Sol (Cursor sessions; models were switched — corrected 2026-11-14) · **Date:** 2026-11-14
 
 - Applied all Musts in `S1-auth-roles.md`: custom JWT + JSON DB, 3 seed users, client redirect semantics, required `AUTH_SECRET`.
 - Should: plaintext demo passwords called out as non-production.
