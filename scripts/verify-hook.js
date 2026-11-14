@@ -57,6 +57,7 @@ for (const [cmd, expect] of [
 
 console.log("# 2. Forced add in any form (denied even with no .env on disk)");
 for (const cmd of [
+  "git add -f .env",
   "git add -f .",
   "git add -f ./",
   "git add -f .\\",
