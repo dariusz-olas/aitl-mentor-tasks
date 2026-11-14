@@ -120,3 +120,33 @@ None.
 | Should 1 — 401 claim in production | Accepted | The Background sentence is limited to non-production and names the production demo guard. |
 | Should 2 — clearing while pending | Accepted | E2E case f holds back the second response and asserts, while it is pending, that the alert is absent and the submit button is disabled. |
 | Should 3 — real-page 400 | Accepted | New E2E case g: `not-an-email` against the real API shows `Invalid body`. |
+
+## Re-review of revision 3
+
+**Reviewer model:** GPT-5.6 Sol (`gpt-5.6-sol-medium`)
+**Date:** 2026-11-14
+**Spec revision reviewed:** commit 12381bd
+**Verdict:** approve
+
+### Status of re-review findings
+
+| Finding | Status | Evidence in the spec |
+|---------|--------|----------------------|
+| Must 1 — contradictory object shape | resolved | Message-selection rule 1 now gives an exact runtime predicate: non-null object, not an array, own string `error`, with no prototype check. AC4 uses the same boundary (`null`, arrays, and primitives fall back), and the unit matrix explicitly confirms that a class instance with an own string `error` is accepted. |
+| Should 1 — 401 claim in production | resolved | Background now limits the placeholder-secret 401 statement to outside production and separately states that the production demo guard runs before credential checking, matching `lib/auth.ts`. |
+| Should 2 — clearing while pending | resolved | AC7(f) requires holding back the corrected response, asserting during that pending interval that the old alert is absent and the submit button is disabled, then releasing the response and asserting navigation to `/tasks`. |
+| Should 3 — real-page 400 | resolved | AC7(g) submits `not-an-email` through the real page and API and requires the returned 400 `Invalid body` message to appear. |
+
+### New findings
+
+#### Must
+
+None.
+
+#### Should
+
+None.
+
+#### Nice
+
+None.
