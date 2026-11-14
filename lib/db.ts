@@ -3,8 +3,18 @@ import fs from "fs";
 import path from "path";
 import type { Task, User } from "./types";
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const DB_PATH = path.join(DATA_DIR, "db.json");
+function resolveDbPath(): string {
+  if (process.env.AITL_DB_PATH) return path.resolve(process.env.AITL_DB_PATH);
+  return path.join(process.cwd(), "data", "db.json");
+}
+
+function dbPath(): string {
+  return resolveDbPath();
+}
+
+function dataDir(): string {
+  return path.dirname(dbPath());
+}
 
 type DbShape = { users: User[]; tasks: Task[] };
 
@@ -32,40 +42,58 @@ const SEED_USERS: User[] = [
   },
 ];
 
+function seedShape(): DbShape {
+  return {
+    users: SEED_USERS,
+    tasks: [
+      {
+        id: "t-seed-a",
+        title: "Prepare mentoring notes",
+        description: "Owned by mentee A",
+        status: "todo",
+        assigneeUserId: "u-mentee-a",
+        createdByUserId: "u-mentee-a",
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: "t-seed-b",
+        title: "Secret B task",
+        description: "Owned by mentee B — IDOR target",
+        status: "doing",
+        assigneeUserId: "u-mentee-b",
+        createdByUserId: "u-mentee-b",
+        updatedAt: new Date().toISOString(),
+      },
+    ],
+  };
+}
+
 function ensureDb(): DbShape {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  if (!fs.existsSync(DB_PATH)) {
-    const seed: DbShape = {
-      users: SEED_USERS,
-      tasks: [
-        {
-          id: "t-seed-a",
-          title: "Prepare mentoring notes",
-          description: "Owned by mentee A",
-          status: "todo",
-          assigneeUserId: "u-mentee-a",
-          createdByUserId: "u-mentee-a",
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: "t-seed-b",
-          title: "Secret B task",
-          description: "Owned by mentee B — IDOR target",
-          status: "doing",
-          assigneeUserId: "u-mentee-b",
-          createdByUserId: "u-mentee-b",
-          updatedAt: new Date().toISOString(),
-        },
-      ],
-    };
-    fs.writeFileSync(DB_PATH, JSON.stringify(seed, null, 2), "utf8");
+  const file = dbPath();
+  const dir = dataDir();
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  if (!fs.existsSync(file)) {
+    const seed = seedShape();
+    atomicWrite(file, JSON.stringify(seed, null, 2));
     return structuredClone(seed);
   }
-  return JSON.parse(fs.readFileSync(DB_PATH, "utf8")) as DbShape;
+  return JSON.parse(fs.readFileSync(file, "utf8")) as DbShape;
+}
+
+function atomicWrite(file: string, contents: string): void {
+  const tmp = `${file}.${process.pid}.${Date.now()}.tmp`;
+  fs.writeFileSync(tmp, contents, "utf8");
+  try {
+    fs.renameSync(tmp, file);
+  } catch {
+    // Windows may deny rename over an existing file — replace via copy.
+    fs.copyFileSync(tmp, file);
+    fs.unlinkSync(tmp);
+  }
 }
 
 function save(db: DbShape): void {
-  fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), "utf8");
+  atomicWrite(dbPath(), JSON.stringify(db, null, 2));
 }
 
 export function listUsers(): User[] {
@@ -132,6 +160,10 @@ export function deleteTask(id: string): boolean {
 }
 
 export function resetDbForTests(): void {
-  if (fs.existsSync(DB_PATH)) fs.unlinkSync(DB_PATH);
+  if (process.env.NODE_ENV !== "test" && !process.env.AITL_DB_PATH) {
+    throw new Error("resetDbForTests refused: set NODE_ENV=test or AITL_DB_PATH");
+  }
+  const file = dbPath();
+  if (fs.existsSync(file)) fs.unlinkSync(file);
   ensureDb();
 }

@@ -2,39 +2,34 @@
 
 ## Cel hooka
 
-Blokada `git add/commit/push` gdy komenda dotyczy plików `.env*`.
+Blokada `git add/commit/push/stage` gdy:
+
+1. komenda zawiera ścieżkę `.env*` (także wielosegmentowe, np. `.env.production.local`),
+2. `git add -f` / broad add (`.`, `-A`, `--all`) przy istniejącym pliku `.env*` na dysku,
+3. indeks ma już zstagedowane pliki `.env*` (commit/push/add).
 
 ## Gdzie jest zdefiniowany
 
 - `.cursor/hooks.json` → `beforeShellExecution`
 - Skrypt: `.cursor/hooks/block-env-commit.js`
-- Narzędzie: Cursor
+- Automatyczny dowód: `node scripts/verify-hook.js` (także w CI)
 
 ## Scenariusz odtworzenia
 
-1. Spróbuj (w środowisku z hookami Cursor):  
-   `git add .env.local`  
-   albo przekaż tę komendę przez shell podlegający hookowi.
-2. Oczekiwany rezultat: **zatrzymanie** (exit code 2, komunikat HOOK DENY).
-3. Dowód lokalny (bez Cursor UI):
-
 ```powershell
-cd C:\Users\NowyDariusz\Projects\aitl-mentor-tasks
-echo '{"command":"git add .env.local"}' | node .cursor/hooks/block-env-commit.js
-echo ExitCode=$LASTEXITCODE
+node scripts/verify-hook.js
 ```
 
-Oczekiwane: `ExitCode=2`.
+Oczekiwane: wszystkie linie `OK`, exit 0.
 
-Kontrola negatywna (powinna przejść):
+Ręcznie (przez pipe do skryptu, nie przez Cursor shell z literalnym `.env` w komendzie agenta):
 
-```powershell
-echo '{"command":"git status"}' | node .cursor/hooks/block-env-commit.js
-echo ExitCode=$LASTEXITCODE
-```
+- DENY: `git add .env.local`, `git add ".env"`, `git add .env.production.local`, `git add -f .` (gdy `.env` istnieje)
+- ALLOW: `git status`
 
-Oczekiwane: `ExitCode=0`.
+## Prompt injection — dwa poziomy dowodu
 
-## Dlaczego to ma znaczenie
+1. **Skrypt deterministyczny** (`scripts/verify-hook.js`) — regresja logiki hooka.
+2. **Sesja agenta** — adversarial intent w tej sesji implementacyjnej (próba `git add -f .` / commit ścieżki env) zatrzymany przez aktywny hook Cursor lub przez logikę DENY powyżej. Zob. `security-notes.md` § Prompt injection.
 
-Deterministyczna reguła bezpieczeństwa — nie poleganie na „agent obiecał”.
+Hook chroni **kanał shell** w Cursor; nie zastępuje `.gitignore` ani secret scanning na remote.

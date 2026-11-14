@@ -19,7 +19,7 @@ export async function GET(_req: Request, ctx: Ctx) {
 }
 
 const patchSchema = z.object({
-  title: z.string().min(1).optional(),
+  title: z.string().trim().min(1).optional(),
   description: z.string().optional(),
   status: z.enum(["todo", "doing", "done"]).optional(),
 });
@@ -32,7 +32,13 @@ export async function PATCH(req: Request, ctx: Ctx) {
   if (!task || !canWriteTask(user, task)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  const parsed = patchSchema.safeParse(await req.json());
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+  const parsed = patchSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
   }
