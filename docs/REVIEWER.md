@@ -2,6 +2,7 @@
 
 ## Demo (≤2 min)
 
+- Repo: https://github.com/dariusz-olas/aitl-mentor-tasks
 - URL: lokalnie `npm run dev` → http://localhost:3000 (public URL po deploy)
 - Role: `mentor`, `mentee`
 - Konta demo:
@@ -24,11 +25,11 @@
 
 | ID | Artefakt | Link |
 |----|----------|------|
-| A1–A2 | Brief + backlog | `.ai/product-brief.md`, `docs/backlog.md` |
-| A3–A4 | Spec + review 2. modelu | `.ai/specs/S1…S4*.md` |
-| A5–A6 | AGENTS + skill | `AGENTS.md`, `.ai/skills/implement-from-spec/` |
-| A7 | Hook + demo | `.cursor/hooks/`, `docs/hook-demo.md` |
-| A8–A9 | PR agenta | _(po publicznym remote)_ |
+| A1–A2 | Brief + backlog | [.ai/product-brief.md](../.ai/product-brief.md), [docs/backlog.md](backlog.md) |
+| A3–A4 | Spec + review 2. modelu | [.ai/specs/](../.ai/specs/) |
+| A5–A6 | AGENTS + skill | [AGENTS.md](../AGENTS.md), [.ai/skills/implement-from-spec/](../.ai/skills/implement-from-spec/) |
+| A7 | Hook + demo | [.cursor/hooks/](../.cursor/hooks/), [hook-demo.md](hook-demo.md) |
+| A8–A9 | PR agenta | otwarte PR-y w repo (opis: model + skill) |
 
 ## CI / security
 

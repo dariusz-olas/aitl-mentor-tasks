@@ -18,4 +18,6 @@ Projekt wyróżnienia **AI Tech Leaders** — mini tracker zadań mentoringowych
 
 ## CI
 
-Workflow: `.github/workflows/ci.yml` (build + `npm test`). Publiczne remote — po Twoim „tak” na `gh repo create`.
+Workflow: `.github/workflows/ci.yml` (build + unit + Playwright E2E).
+
+**GitHub:** https://github.com/dariusz-olas/aitl-mentor-tasks
