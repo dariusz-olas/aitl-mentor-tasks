@@ -77,7 +77,7 @@ body {
   }
 
   .mt-btn-ink {
-    @apply inline-flex h-[51px] w-full items-center justify-center gap-2 rounded-md bg-ink-accent px-[18px] text-sm font-semibold text-ink transition-colors hover:brightness-105 focus-visible:outline-none focus-visible:ring-2;
+    @apply inline-flex h-[51px] w-full items-center justify-center gap-2 rounded-md bg-ink-accent px-[18px] text-sm font-semibold text-ink transition-colors hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 disabled:opacity-50;
     --tw-ring-color: color-mix(in oklab, var(--ink-accent) 60%, transparent);
   }
 
