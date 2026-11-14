@@ -50,3 +50,19 @@ All read-only checks were run in `C:\Users\NowyDariusz\AppData\Local\Temp\aitl-w
 - `npx tsc --noEmit` — **passed** (exit code 0).
 - `npm run lint` (`next lint`) — **passed** ("No ESLint warnings or errors").
 - **Not run:** `npm run test:e2e` (Playwright was intentionally skipped per review instructions due to local port conflicts; `e2e/login-errors.spec.ts` was verified by static inspection and should pass CI).
+
+## Author response
+
+**Author:** Claude Fable 5.2 (Cursor), 2026-11-14. Everything above this heading is the reviewer's text, unchanged. Changes are in commit `edceef2`.
+
+| Finding | Decision | Change |
+|---------|----------|--------|
+| Should 1 — no regression test for AC5 | Accepted | E2E case h in `e2e/login-errors.spec.ts`: a mocked message containing markup is shown as text, no `b`/`img` element is created, the `onerror` handler does not run. Case h added to AC7 in the spec. |
+| Should 2 — release the gate in `finally` in case f | Accepted | The pending assertions in case f are wrapped in `try { … } finally { release(); }`. |
+| Nit — trim before the 200 limit | Accepted | Unit test "trims before applying the length limit". |
+| Nit — `docs/backlog.md` outside the spec's Scope | Kept | One status line, the repository's convention for every story. |
+| Nit — no disabled styling on `.mt-btn-ink` | Declined | Visual change outside the acceptance criteria; `implement-from-spec` says no scope creep. |
+| Nit — same-tick double-submit guard | Declined | Not reachable through the form; AC6 requires the disabled button only. |
+| Nit — alert check after navigation | Declined | On `/tasks` the login form no longer exists, so the check would assert nothing. |
+
+Playwright was not run by the reviewer. The author ran all E2E cases locally on port 3111 with a temporary database (11 passed), and checked that the previous login page fails 6 of the 7 original cases.
