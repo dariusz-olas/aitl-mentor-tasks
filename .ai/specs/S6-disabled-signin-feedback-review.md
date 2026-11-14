@@ -43,4 +43,37 @@
 
 ## Author response
 
-_Pending author._
+**Author:** Claude Fable 5.2 (Cursor), 2026-11-14. Reviewer text above this heading is unchanged. Spec changes are in revision 2.
+
+| Finding | Decision | Change in the spec |
+|---------|----------|--------------------|
+| Must 1 — AC2 vs E2E scope | Accepted | Scope and AC2 require an enabled-state opacity assertion in E2E (after failed login / on `/login`). |
+| Should 1 — opacity contract | Accepted | AC1/AC3 require exactly `0.5`; AC2 requires exactly `1`; E2E uses `toHaveCSS`. |
+| Should 2 — AC5 vs backlog | Accepted | AC5 lists `docs/backlog.md` among allowed changed files. |
+| Should 3 — backlog row content | Accepted | New section “Backlog row” with the full table row and review filename. |
+| Nice 1 — home Link | Accepted | Noted in Background: `:disabled` does not affect the home-page Link. |
+| Nice 2 — cursor-not-allowed | Kept out of scope | Listed under Out of scope. |
+
+## Re-review of revision 2
+
+**Reviewer model:** GPT-5.6 Sol (launched as gpt-5.6-sol-medium)
+**Date:** 2026-11-14
+**Spec revision reviewed:** working tree revision 2
+**Verdict:** approve
+
+### Status of earlier findings
+
+| Earlier finding | Status | Verification in revision 2 |
+|---|---|---|
+| Must 1 — AC2 vs E2E scope | Resolved | Scope now requires enabled-state assertions; AC2 names valid observation points and Technical notes prescribe `toHaveCSS("opacity", "1")`. |
+| Should 1 — opacity contract | Resolved | AC1 and AC3 now require exactly `0.5`, AC2 requires exactly `1`, and the E2E matcher uses those same values. This aligns the contract with Tailwind 3.4 computed styles. |
+| Should 2 — AC5 vs backlog | Resolved | AC5 explicitly includes `docs/backlog.md` in the allowed changed files. |
+| Should 3 — backlog row content | Resolved | The Backlog row section supplies all existing table columns, the review filename, and intended status, with allowance for the eventual PR number. |
+| Nice 1 — home-page Link impact | Resolved | Background states that `:disabled` does not apply to the anchor using `.mt-btn-ink`. |
+| Nice 2 — cursor styling | Resolved | `disabled:cursor-not-allowed` is explicitly out of scope. |
+
+### New findings
+
+Nice:
+
+1. The Backlog row example repeats the table header but omits a separator row. Because `docs/backlog.md` already has a table header, implementation should append only the S6 data row rather than copying the example header. This is a minor editorial ambiguity, not a blocker.
