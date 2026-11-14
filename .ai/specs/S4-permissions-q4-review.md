@@ -44,7 +44,7 @@
 
 ## Author response
 
-**Author model:** Composer (Cursor) · **Date:** 2026-11-14
+**Author model:** Composer and GPT-5.6 Sol (Cursor sessions; models were switched — corrected 2026-11-14) · **Date:** 2026-11-14
 
 - Spec now requires **404-only** IDOR semantics and **route-level** automated tests.
 - Same PR adds `lib/tasks-api.idor.test.ts` (mocked session + route handlers) and E2E IDOR check.

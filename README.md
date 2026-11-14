@@ -18,14 +18,17 @@ Projekt wyróżnienia **AI Tech Leaders** — mini tracker zadań mentoringowych
 | `mentee.a@demo.local` | `demo-mentee-a` | mentee |
 | `mentee.b@demo.local` | `demo-mentee-b` | mentee |
 
+Konta demo działają tylko w `npm run dev`. W trybie produkcyjnym (`npm run build` + `npm start`) logowanie demo zwraca 403 — celowo.
+
 Szczegóły checklisty: [`docs/REVIEWER.md`](docs/REVIEWER.md).
 
 ## AITL — gdzie szukać
 
-- `AGENTS.md` · `.ai/` · `.cursor/skills/` · `docs/REVIEWER.md` · `docs/hook-demo.md` · `security-notes.md`
-- Specki + niezależne review (GPT-5.2, 2026-11-14): `.ai/specs/`
+- Przewodnik dla oceniającego (wymaganie → dowód): [`docs/REVIEWER.md`](docs/REVIEWER.md)
+- `AGENTS.md` · `.ai/product-brief.md` · `docs/backlog.md` · `.cursor/skills/` · `docs/hook-demo.md` · `security-notes.md`
+- Specki i review innym modelem: `.ai/specs/` (S1–S4: review GPT-5.2; S5: review specki GPT-5.6 Sol, review kodu Gemini 4 Hydrogen)
 - P4: `lib/task-status.ts` · Q4: `lib/permissions.ts` + `lib/tasks-api.idor.test.ts`
 
 ## CI
 
-Workflow: `.github/workflows/ci.yml` — build + unit + Playwright E2E.
+Workflow: `.github/workflows/ci.yml` — na każdym PR: build, testy jednostkowe, test hooka, `npm audit`, Playwright E2E.

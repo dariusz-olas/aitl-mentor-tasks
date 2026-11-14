@@ -40,6 +40,6 @@
 
 ## Author response
 
-**Author model:** Composer (Cursor) · **Date:** 2026-11-14
+**Author model:** Composer and GPT-5.6 Sol (Cursor sessions; models were switched — corrected 2026-11-14) · **Date:** 2026-11-14
 
 - Accepted verdict (approve with changes). REVIEWER.md updated to point at `lib/task-status.test.ts`. Enforcement stays in route handlers (no service-layer refactor in MVP).

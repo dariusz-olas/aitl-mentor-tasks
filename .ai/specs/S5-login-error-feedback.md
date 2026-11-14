@@ -64,7 +64,8 @@ AC1 and AC2 apply to the non-production environment (`npm run dev`, Playwright E
      d. mocked 500 with a `text/plain` body → `Login failed`;
      e. aborted request → `Login failed`;
      f. wrong password, then correct password with the second login response held back by the test → while that request is pending the previous alert is absent and the submit button is disabled; once the response is released the URL is `/tasks`;
-     g. an email that is not an email (`not-an-email`) against the real API → the alert shows `Invalid body` (real 400 through the page).
+     g. an email that is not an email (`not-an-email`) against the real API → the alert shows `Invalid body` (real 400 through the page);
+     h. a mocked message containing HTML markup → the alert shows the markup as text and contains no element created from it (AC5; added after the code review of the implementation PR).
 8. `docs/REVIEWER.md` states that with `AUTH_SECRET=CHANGE_ME` (a blind copy of `.env.example`) a correct demo login shows `AUTH_SECRET is required (min 16 chars). Copy .env.example → .env and set a real secret.` on the login screen.
 
 ## Security
