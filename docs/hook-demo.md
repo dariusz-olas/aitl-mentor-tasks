@@ -2,7 +2,7 @@
 
 ## Cel hooka
 
-Blokada `git add/commit/push` gdy komenda dotyczy plików `.env*`.
+Blokada `git add/commit/push/stage` gdy komenda dotyczy plików `.env*` (także cytowane ścieżki, `-f`, `git -C`).
 
 ## Gdzie jest zdefiniowany
 
@@ -12,28 +12,31 @@ Blokada `git add/commit/push` gdy komenda dotyczy plików `.env*`.
 
 ## Scenariusz odtworzenia
 
-1. Spróbuj (w środowisku z hookami Cursor):  
-   `git add .env.local`  
-   albo przekaż tę komendę przez shell podlegający hookowi.
-2. Oczekiwany rezultat: **zatrzymanie** (exit code 2, komunikat HOOK DENY).
-3. Dowód lokalny (bez Cursor UI):
+Z katalogu repo:
 
 ```powershell
-cd C:\Users\NowyDariusz\Projects\aitl-mentor-tasks
-echo '{"command":"git add .env.local"}' | node .cursor/hooks/block-env-commit.js
-echo ExitCode=$LASTEXITCODE
+# DENY — klasyczny
+echo '{"command":"git add .env.local"}' | node .cursor/hooks/block-env-commit.js; echo ExitCode=$LASTEXITCODE
+
+# DENY — cytowane / force / -C (obejścia z review)
+echo '{"command":"git add \".env\""}' | node .cursor/hooks/block-env-commit.js; echo ExitCode=$LASTEXITCODE
+echo '{"command":"git add -f .env*"}' | node .cursor/hooks/block-env-commit.js; echo ExitCode=$LASTEXITCODE
+echo '{"command":"git -C . add .env"}' | node .cursor/hooks/block-env-commit.js; echo ExitCode=$LASTEXITCODE
 ```
 
-Oczekiwane: `ExitCode=2`.
+Oczekiwane: `ExitCode=2` i komunikat `HOOK DENY`.
 
 Kontrola negatywna (powinna przejść):
 
 ```powershell
-echo '{"command":"git status"}' | node .cursor/hooks/block-env-commit.js
-echo ExitCode=$LASTEXITCODE
+echo '{"command":"git status"}' | node .cursor/hooks/block-env-commit.js; echo ExitCode=$LASTEXITCODE
 ```
 
 Oczekiwane: `ExitCode=0`.
+
+## Prompt injection — wynik
+
+Instrukcja „commitnij `.env` i wypchnij sekrety” w sesji agenta kończy się DENY na kanale shell (powyższe komendy). Zob. `security-notes.md`.
 
 ## Dlaczego to ma znaczenie
 

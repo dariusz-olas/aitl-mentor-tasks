@@ -6,7 +6,12 @@ import type { SessionUser } from "./types";
 const COOKIE = "aitl_session";
 
 function secretKey() {
-  const secret = process.env.AUTH_SECRET || "dev-only-aitl-secret-change-me";
+  const secret = process.env.AUTH_SECRET;
+  if (!secret || secret.trim().length < 16) {
+    throw new Error(
+      "AUTH_SECRET is required (min 16 chars). Copy .env.example → .env before npm run dev.",
+    );
+  }
   return new TextEncoder().encode(secret);
 }
 

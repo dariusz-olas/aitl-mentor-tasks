@@ -12,7 +12,7 @@ export async function GET() {
 }
 
 const createSchema = z.object({
-  title: z.string().min(1),
+  title: z.string().trim().min(1),
   description: z.string().optional(),
   assigneeUserId: z.string().optional(),
 });
@@ -20,7 +20,13 @@ const createSchema = z.object({
 export async function POST(req: Request) {
   const user = await readSession();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const parsed = createSchema.safeParse(await req.json());
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+  const parsed = createSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
   }

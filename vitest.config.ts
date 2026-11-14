@@ -5,6 +5,9 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["**/*.test.ts"],
+    env: {
+      AUTH_SECRET: "vitest-aitl-secret-16chars",
+    },
   },
   resolve: {
     alias: {
