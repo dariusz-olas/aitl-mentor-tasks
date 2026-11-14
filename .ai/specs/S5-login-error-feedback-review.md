@@ -71,3 +71,41 @@
 | Nice 2 — 200/201 boundary, unit of length | Accepted | Unit cases for 200 and 201; length defined as UTF-16 code units; no truncation, so a surrogate pair cannot be split. |
 
 Not changed: the API and its messages (out of scope, as in revision 1). `Invalid body` is shown as returned; a friendlier text is listed under Out of scope.
+
+## Re-review of revision 2
+
+**Reviewer model:** GPT-5.6 Sol (`gpt-5.6-sol-medium`)
+**Date:** 2026-11-14
+**Spec revision reviewed:** commit ed8bbe3
+**Verdict:** request changes
+
+### Status of earlier findings
+
+| Finding | Status | Evidence in the spec |
+|---------|--------|----------------------|
+| Must 1 — AC1/AC2 false in production | resolved | The paragraph before AC1 limits both criteria to non-production; AC2 fixes the unknown address as `nobody@example.com`; the Background table accurately states the production guard's conditions. |
+| Must 2 — inconsistent message contract | resolved | “Message selection” defines trimming, own-property and object checks, the 1–200 UTF-16-unit range, fallback rather than truncation, and applies the rule to every non-OK status. AC3 explicitly includes 400, 401, and 403. A separate new object-shape contradiction is recorded below. |
+| Must 3 — client failure path | resolved | The paragraph after the selection rule and Technical notes require handling both rejected `fetch` and failed JSON parsing; AC7(d–e) exercises both through the page. |
+| Must 4 — page wiring and cookie proof | resolved | AC7 uses the real page, mocks a 403 and fallback responses, checks `page.context().cookies()`, and includes a separate unknown-email case. |
+| Should 1 — information disclosure | resolved | Security accurately distinguishes existing wire exposure from added UI visibility, acknowledges that message safety is not enforced, limits acceptance to the local MVP, and requires a stable message before public deployment. Given the stated local-only scope, rejecting a client allowlist is reasonable. |
+| Should 2 — cookie precondition | resolved | AC1 now requires a fresh context, and Security accurately says a failed login neither creates nor clears the existing cookie. |
+| Should 3 — exact placeholder message | resolved | Background and AC8 quote the actual short-secret message and correctly explain that `CHANGE_ME` reaches the length check first. |
+| Should 4 — clearing and retry test | partially | AC6 requires clearing before the request and AC7(f) covers failed-then-successful login, but AC7(f) only requires the final absence of the alert after navigation. It does not require observing that the old alert disappears while the second request is still pending, so the “before the request” timing remains untested. |
+
+### New findings
+
+#### Must
+
+1. **Resolve the contradictory object-shape definition.** Message-selection rule 1 accepts every non-null, non-array object with an own string `error` property, which includes class instances, `Date` objects with an added property, and other non-plain objects. AC4 instead requires fallback when “the body is not a plain object.” These are different contracts, and the unit matrix does not settle the difference. Either define and implement “plain object” precisely (including the accepted prototypes), or change AC4 to “non-null, non-array object” and add a representative non-plain-object unit case.
+
+#### Should
+
+1. **Qualify the Background claim about placeholder secrets.** “Wrong credentials return 401 even when the secret is a placeholder” is not universally true: in production, an email ending in `@demo.local` or any demo password throws the 403 production guard before credential validation (`lib/auth.ts:76-84`). Say “outside the production demo guard” or limit the sentence to non-production.
+
+2. **Make AC7(f) verify immediate clearing, not only the post-navigation result.** Delay or intercept the corrected second response and assert that the previous alert is absent while that request is pending, then complete the response and assert `/tasks`. Otherwise an implementation that leaves the stale alert visible until navigation still satisfies the listed test while violating AC6.
+
+3. **Add a real-page 400 case to the E2E matrix.** Revision 2 correctly identifies `Invalid body` as reachable from the form and AC3 promises uniform handling of 400/401/403, but the browser tests exercise only real 401 and mocked 403. Submitting an invalid email or empty password and asserting `Invalid body` would catch status-specific page wiring that the generic helper tests cannot.
+
+#### Nice
+
+None.
