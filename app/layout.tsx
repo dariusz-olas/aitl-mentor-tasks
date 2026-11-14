@@ -1,17 +1,22 @@
 import type { Metadata } from "next";
-import { DM_Sans, Instrument_Serif } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const dmSans = DM_Sans({
+const dmSans = localFont({
+  src: [
+    { path: "./fonts/DMSans-Regular.ttf", weight: "400", style: "normal" },
+    { path: "./fonts/DMSans-Medium.ttf", weight: "500", style: "normal" },
+    { path: "./fonts/DMSans-SemiBold.ttf", weight: "600", style: "normal" },
+    { path: "./fonts/DMSans-Bold.ttf", weight: "700", style: "normal" },
+  ],
   variable: "--font-dm-sans",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
-const instrumentSerif = Instrument_Serif({
+const instrumentSerif = localFont({
+  src: [{ path: "./fonts/InstrumentSerif-Regular.ttf", weight: "400", style: "normal" }],
   variable: "--font-instrument",
-  subsets: ["latin"],
-  weight: "400",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
