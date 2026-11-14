@@ -4,7 +4,7 @@ Projekt wyróżnienia **AI Tech Leaders** — mini tracker zadań mentoringowych
 
 ## Start lokalny
 
-1. `cp .env.example .env` (Windows: `Copy-Item .env.example .env`) i ustaw **`AUTH_SECRET`** (≥16 znaków)
+1. `cp .env.example .env` (Windows: `Copy-Item .env.example .env`) i ustaw **własny** `AUTH_SECRET` (≥16 znaków; `CHANGE_ME` z przykładu jest celowo odrzucany)
 2. `npm ci`
 3. `npm test`
 4. `npm run build`

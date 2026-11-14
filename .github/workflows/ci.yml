@@ -19,7 +19,11 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm test
+      - name: verify env hook
+        run: node scripts/verify-hook.js
       - name: npm audit (prod high+)
         run: npm audit --omit=dev --audit-level=high
+      - name: npm audit (critical, incl. dev)
+        run: npm audit --audit-level=critical
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e

@@ -180,7 +180,7 @@ export default function TasksPage() {
               <option value={user.id}>Myself (mentor)</option>
               {mentees.map((m) => (
                 <option key={m.id} value={m.id}>
-                  {m.name} ({m.email})
+                  {m.name}
                 </option>
               ))}
             </select>

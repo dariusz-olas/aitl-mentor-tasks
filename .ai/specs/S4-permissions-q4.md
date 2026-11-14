@@ -1,8 +1,8 @@
 # Spec S4 — Permissions test Q4 (IDOR)
 
-**Author model:** Composer (Cursor)  
-**Epic:** EPIC-1  
-**Depends on:** S1, S2  
+**Author model:** Composer (Cursor)
+**Epic:** EPIC-1
+**Depends on:** S1, S2
 **Status:** ready (Must from GPT-5.2 review 2026-11-14 applied)
 
 ## Goal
