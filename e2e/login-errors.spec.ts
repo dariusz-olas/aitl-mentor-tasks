@@ -96,8 +96,13 @@ test.describe("S5 login error feedback", () => {
     page,
   }) => {
     await page.goto("/login");
+    const button = page.getByRole("button", { name: "Sign in" });
+    await expect(button).toHaveCSS("opacity", "1");
+
     await submit(page, "mentee.a@demo.local", "wrong-password");
     await expect(loginAlert(page)).toHaveText("Invalid credentials");
+    await expect(button).toBeEnabled();
+    await expect(button).toHaveCSS("opacity", "1");
 
     let release!: () => void;
     const gate = new Promise<void>((resolve) => {
@@ -110,8 +115,8 @@ test.describe("S5 login error feedback", () => {
 
     try {
       await submit(page, "mentee.a@demo.local", "demo-mentee-a");
-      const button = page.getByRole("button", { name: "Sign in" });
       await expect(button).toBeDisabled();
+      await expect(button).toHaveCSS("opacity", "0.5");
       await expect(loginAlert(page)).toHaveCount(0);
     } finally {
       // Always let the held request go, so a failed assertion cannot leave
