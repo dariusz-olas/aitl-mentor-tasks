@@ -46,7 +46,7 @@ test("mentor assigns task to mentee", async ({ page }) => {
 
   const card = page.locator("li").filter({ hasText: title });
   await expect(card).toBeVisible();
-  await expect(card.getByText(/assignee: u-mentee-a/)).toBeVisible();
+  await expect(card.getByText(/assignee: Mentee A/)).toBeVisible();
 });
 
 test("IDOR: mentee A gets 404 on mentee B task API", async ({ page, request }) => {

@@ -3,19 +3,103 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  /* Light surface (tasks) */
+  --background: oklch(97.4% 0.003 190);
+  --foreground: oklch(25% 0.012 185);
+  --card: oklch(99.5% 0.002 190);
+  --border: oklch(87.5% 0.01 185);
+  --muted: oklch(94.7% 0.005 185);
+  --muted-foreground: oklch(52% 0.015 185);
+  --primary: oklch(48% 0.089 182);
+  --primary-foreground: oklch(99% 0.003 180);
+  --accent: oklch(91.4% 0.027 181);
+  --destructive: oklch(53% 0.15 25);
+  --shadow-task: 0 2px 5px oklch(20% 0.01 185 / 0.025);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Dark ink (login / brand bar) */
+  --ink: oklch(22% 0.012 185);
+  --ink-foreground: oklch(96.3% 0.005 180);
+  --ink-muted: oklch(70% 0.015 185);
+  --ink-border: oklch(42% 0.014 185);
+  --ink-input: oklch(31% 0.014 185);
+  --ink-accent: oklch(72% 0.1 180);
+
+  --radius: 6px;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-instrument), "Times New Roman", serif;
+  }
+
+  .bg-grain {
+    background-color: var(--ink);
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, oklch(35% 0.04 180 / 0.35), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 100%, oklch(28% 0.03 185 / 0.4), transparent),
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  }
+
+  .bg-paper {
+    background-color: var(--background);
+    background-image:
+      radial-gradient(ellipse 70% 50% at 50% 0%, oklch(94% 0.01 180 / 0.7), transparent),
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  }
+}
+
+@layer components {
+  .mt-input {
+    @apply h-10 w-full rounded-md border border-border bg-card px-3 text-sm text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2;
+    --tw-ring-color: color-mix(in oklab, var(--primary) 40%, transparent);
+  }
+  .mt-input::placeholder {
+    color: var(--muted-foreground);
+  }
+
+  .mt-input-ink {
+    @apply h-10 w-full rounded-md border border-ink-border bg-ink-input px-4 text-sm text-ink-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2;
+    --tw-ring-color: color-mix(in oklab, var(--ink-accent) 50%, transparent);
+  }
+  .mt-input-ink::placeholder {
+    color: color-mix(in oklab, var(--ink-muted) 70%, transparent);
+  }
+
+  .mt-btn-primary {
+    @apply inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 disabled:opacity-50;
+    --tw-ring-color: color-mix(in oklab, var(--primary) 40%, transparent);
+  }
+
+  .mt-btn-ink {
+    @apply inline-flex h-[51px] w-full items-center justify-center gap-2 rounded-md bg-ink-accent px-[18px] text-sm font-semibold text-ink transition-colors hover:brightness-105 focus-visible:outline-none focus-visible:ring-2;
+    --tw-ring-color: color-mix(in oklab, var(--ink-accent) 60%, transparent);
+  }
+
+  .mt-btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2;
+    --tw-ring-color: color-mix(in oklab, var(--primary) 30%, transparent);
+  }
+
+  .mt-btn-outline {
+    @apply inline-flex items-center justify-center rounded-md border border-border bg-transparent px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2;
+    --tw-ring-color: color-mix(in oklab, var(--primary) 30%, transparent);
+  }
+
+  .mt-status {
+    @apply inline-flex h-7 items-center rounded-md border border-border px-2.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 disabled:cursor-default;
+    --tw-ring-color: color-mix(in oklab, var(--primary) 30%, transparent);
+  }
+  .mt-status:hover {
+    border-color: color-mix(in oklab, var(--primary) 40%, transparent);
+  }
+
+  .mt-status-active {
+    @apply border-accent bg-accent text-primary;
+  }
 }
