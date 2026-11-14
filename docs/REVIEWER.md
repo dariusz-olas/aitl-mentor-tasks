@@ -9,6 +9,7 @@
   - `mentee.a@demo.local` / `demo-mentee-a`
   - `mentee.b@demo.local` / `demo-mentee-b`
 - Seed: tworzony w `data/db.json` przy pierwszym starcie (`lib/db.ts`)
+- Ślepa kopia `.env.example` (`AUTH_SECRET=CHANGE_ME`): poprawne logowanie demo pokaże na ekranie logowania `AUTH_SECRET is required (min 16 chars). Copy .env.example → .env and set a real secret.` — ustaw własny sekret (min. 16 znaków) w `.env` i zrestartuj serwer (S5)
 
 ## Produkt
 

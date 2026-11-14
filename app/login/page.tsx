@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { LOGIN_ERROR_FALLBACK, loginErrorMessage } from "@/lib/login-error";
 
 const DEMO_ACCOUNTS = [
   {
@@ -26,21 +27,30 @@ export default function LoginPage() {
   const [email, setEmail] = useState("mentee.a@demo.local");
   const [password, setPassword] = useState("demo-mentee-a");
   const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    if (!res.ok) {
-      setError("Login failed");
-      return;
+    setPending(true);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!res.ok) {
+        const body: unknown = await res.json().catch(() => null);
+        setError(loginErrorMessage(body));
+        return;
+      }
+      router.push("/tasks");
+      router.refresh();
+    } catch {
+      setError(LOGIN_ERROR_FALLBACK);
+    } finally {
+      setPending(false);
     }
-    router.push("/tasks");
-    router.refresh();
   }
 
   return (
@@ -107,7 +117,7 @@ export default function LoginPage() {
                 {error}
               </p>
             )}
-            <button type="submit" className="mt-btn-ink">
+            <button type="submit" className="mt-btn-ink" disabled={pending}>
               Sign in
               <span aria-hidden>→</span>
             </button>
